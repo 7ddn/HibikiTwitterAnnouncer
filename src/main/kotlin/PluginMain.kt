@@ -1,4 +1,4 @@
-package org.example.mirai.plugin
+package org.sddn.hibiki.plugin
 
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
@@ -6,15 +6,14 @@ import net.mamoe.mirai.utils.info
 
 object PluginMain : KotlinPlugin(
     JvmPluginDescription(
-        id = "org.example.mirai-plugin",
-        name = "ExamplePlugin",
+        id = "org.sddn.hibiki",
+        name = "HibikiTwitterAnnouncer",
         version = "0.1.0"
     ) {
-        author("作者名称或联系方式")
+        author("七度")
 
         info("""
-            这是一个测试插件, 
-            在这里描述插件的功能和用法等.
+            转发官推内容到QQ
         """.trimIndent())
 
         // author 和 info 可以删除.
