@@ -15,3 +15,7 @@ repositories {
     mavenCentral()
     jcenter()
 }
+
+dependencies {
+    implementation("com.alibaba:fastjson:1.2.76")
+}
