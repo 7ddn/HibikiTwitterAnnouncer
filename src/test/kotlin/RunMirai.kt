@@ -5,6 +5,7 @@ import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.enable
 import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.load
 import net.mamoe.mirai.console.terminal.MiraiConsoleTerminalLoader
+import net.mamoe.mirai.utils.BotConfiguration
 
 suspend fun main() {
     MiraiConsoleTerminalLoader.startAsDaemon()
@@ -14,6 +15,7 @@ suspend fun main() {
 
     val bot = MiraiConsole.addBot(123456, "") {
         fileBasedDeviceInfo()
+        protocol = BotConfiguration.MiraiProtocol.ANDROID_PAD
     }.alsoLogin()
 
     MiraiConsole.job.join()
