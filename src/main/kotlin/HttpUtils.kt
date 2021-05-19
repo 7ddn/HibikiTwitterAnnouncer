@@ -14,12 +14,14 @@ fun recentSearchUrlGenerator(
     searchTarget: String = "YuGiOh_OCG_INFO",
     nextToken : String = "",
     expansions : String = "attachments.media_keys",
-    mediaFields : String = "url"
+    mediaFields : String = "url",
+    maxResults : Int = 10,
     ) : String {
         return "${PluginConfig.APIs["recent"]}" +
             searchTarget +
-            "&expansions=$expansions"+
+            "&expansions=author_id,$expansions"+
             "&media.fields=$mediaFields"+
+            "&user.fields=username,name"+
             if (nextToken!="") "&next_token=$nextToken" else ""
 }
 
@@ -27,12 +29,14 @@ fun recentSearchUrlGenerator(
 //            "&expansions=attachments.media_keys" +
 //            "&media.fields=url"
 
-const val bearerToken = "AAAAAAAAAAAAAAAAAAAAAMHmPgEAAAAAnk1ZHn0GeuadsXZOBD0B1a7EsX0%3DlkUm5FLfeCCSDI8IeCxEF6KxdXsmmG0pvrExyDjx19L4gvNkA8"
+val bearerToken = PluginConfig.Tokens["bearerToken"]
 val proxy =  Proxy(Proxy.Type.HTTP, InetSocketAddress(
     PluginConfig.Proxies["host"].toString(),
     PluginConfig.Proxies["port"].toString().toInt()))
 
 fun httpGet(url: String): JSONObject{
+    if (bearerToken == "") throw Exception("No Available Bearer Token")
+
     PluginMain.logger.info("Now Getting from $url")
     val link = URL(url)
 

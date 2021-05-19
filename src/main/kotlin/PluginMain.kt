@@ -48,6 +48,23 @@ object PluginMain : KotlinPlugin(
             //logger.info("last code = ${lastMessage.serializeToMiraiCode()} & " +
             //    "this code = ${message.serializeToMiraiCode()}")
 
+            // 帮助
+
+            if (messageText == "帮助") {
+                val toSay =
+                    PlainText("Hibiki-Twitter-Announcer 操作指南\n\r") +
+                    PlainText("查询<number>条官推 -> " +
+                        "获取<number>条游戏王官方Twitter(@YuGiOh_OCG_Info)的最新Twitter,其中<number>为阿拉伯数字\n\r") +
+                    PlainText("查询最新官推 -> " +
+                        "获取游戏王官方Twitter(@YuGiOh_OCG_Info)的一条最新Twitter\n\r") +
+                    PlainText( "查询<twitterID>的<number>条推文 ->" +
+                        "获取<number>条来自@<twitterID>的最新推文,其中<number>为阿拉伯数字," +
+                        "<twitterID>为只包含英文/数字/下划线的标准TwitterID\n\r") +
+                    PlainText("查询关于<object>的<number>条推文 ->" +
+                        "获取包含<object>关键字的<number>条推文，其中<object>为任意UTF-8标准字符,<number>为阿拉伯数字")
+                group.sendMessage(toSay)
+            }
+
             // 查询官推
             if (messageText.startsWith("查询")) {
                 val patternYGO = Regex("查询\\d+条官推")

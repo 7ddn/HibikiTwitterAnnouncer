@@ -15,5 +15,13 @@ object PluginConfig : AutoSavePluginConfig("config") {
         "port" to "8099"
     ))
 
+    val Tokens : Map<String, String> by value(mapOf(
+        "bearerToken" to "AAAAAAAAAAAAAAAAAAAAAMHmPgEAAAAAnk1ZHn0GeuadsXZOBD0B1a7EsX0%3DlkUm5FLfeCCSDI8IeCxEF6KxdXsmmG0pvrExyDjx19L4gvNkA8"
+    ))
+
+    val Switches : Map<String, String> by value(mapOf(
+        "newCard" to "1"
+    ))
+
 
 }
