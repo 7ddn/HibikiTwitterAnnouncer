@@ -54,9 +54,9 @@ suspend fun getTimeline(
             inquirerGroup.sendMessage(newestText.toPlainText())
         }
         if (mediaUrls.isNotEmpty()) {
-            PluginMain.logger.info("有${mediaUrls.size}张图片")
+            //PluginMain.logger.info("有${mediaUrls.size}张图片")
             mediaUrls.forEach {
-                PluginMain.logger.info("url = $it")
+                //PluginMain.logger.info("url = $it")
                 inquirerGroup.sendMessage(
                     Image(
                         URL(it).openConnection(proxy).getInputStream()

@@ -16,12 +16,7 @@ fun recentSearchUrlGenerator(
     expansions : String = "attachments.media_keys",
     mediaFields : String = "url"
     ) : String {
-        PluginMain.logger.info("${PluginConfig.APIs["recent"]}"+ //TODO: unexpected null for "baseRecent"
-            searchTarget +
-            "&expansions=$expansions"+
-            "&media.fields=$mediaFields"+
-            if (nextToken!="") "&next_token=$nextToken" else "")
-        return "${PluginConfig.APIs["recent"]}"+ //TODO: unexpected null for "baseRecent"
+        return "${PluginConfig.APIs["recent"]}" +
             searchTarget +
             "&expansions=$expansions"+
             "&media.fields=$mediaFields"+
