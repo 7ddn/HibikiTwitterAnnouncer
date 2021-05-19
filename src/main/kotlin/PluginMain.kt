@@ -8,12 +8,10 @@ import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
 import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.event.globalEventChannel
 import net.mamoe.mirai.message.code.MiraiCode.deserializeMiraiCode
-import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.PlainText
-import net.mamoe.mirai.message.data.toPlainText
 import net.mamoe.mirai.utils.info
-import kotlin.random.Random as Random
+import kotlin.random.Random
 
 object PluginMain : KotlinPlugin(
     JvmPluginDescription(
@@ -59,24 +57,44 @@ object PluginMain : KotlinPlugin(
 
             // 复读功能
             // TODO: 做成独立插件
+            // 开关
+            when {
+                messageText.startsWith("不准复读") -> {
+                    PluginData.repeatProbability = -1
+                    group.sendMessage("呜呜")
+                }
+                messageText.startsWith("可以复读吗") -> {
+                    val toSay:String = when (PluginData.repeatProbability){
+                        -1 -> "不可以复读，哭哭"
+                        else -> "可以复读，概率是${(PluginData.repeatProbability).toDouble()/100.0}"
+                    }
+                    group.sendMessage(toSay)
+                }
+                messageText.startsWith("可以复读") -> {
+                    PluginData.repeatProbability = 5
+                    group.sendMessage("好耶")
+
+                }
+            }
+
+
+
             // 跟读
             if (message.serializeToMiraiCode() == lastMessage.serializeToMiraiCode()) {
                 repeatingCount++
-                if (repeatingCount == 2) {
+                if (repeatingCount == 2 && PluginData.repeatProbability > 0) {
                     group.sendMessage(message)
                 }
 
             } else {
                 repeatingCount = 1
                 // 随机复读
-                if (Random.nextInt(100)<20) {
+                if (Random.nextInt(100)< PluginData.repeatProbability) {
                     group.sendMessage(message)
                 }
             }
 
             lastMessage = message
-
-
 
 
             delay(100L)
