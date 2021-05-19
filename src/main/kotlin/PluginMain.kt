@@ -7,11 +7,9 @@ import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
 import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.event.globalEventChannel
+import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.toPlainText
 import net.mamoe.mirai.utils.info
-import okhttp3.OkHttpClient
-import java.util.logging.Level
-import java.util.logging.Logger
 
 object PluginMain : KotlinPlugin(
     JvmPluginDescription(
@@ -21,37 +19,51 @@ object PluginMain : KotlinPlugin(
     ) {
         author("七度")
 
-        info("""
+        info(
+            """
             转发官推内容到QQ
-        """.trimIndent())
+        """.trimIndent()
+        )
 
         // author 和 info 可以删除.
     }
 ) {
     override fun onEnable() {
         logger.info { "Plugin loaded" }
+        //logger.info{PluginConfig.APIs["recent"].toString()}
 
         PluginConfig.reload()
 
         PluginData.reload()
 
-        var lastMessage = ""
-        var repeatingSwitch = true
-        Logger.getLogger(OkHttpClient.javaClass.name).level = Level.FINE
+        var lastMessage: Message = "".toPlainText()
+        var repeatingCount = 1
+        //Logger.getLogger(OkHttpClient.javaClass.name).level = Level.FINE
 
         globalEventChannel().subscribeAlways<GroupMessageEvent> {
             val messageText = message.contentToString()
+            logger.info(repeatingCount.toString())
+
+            // 查询官推
             if (messageText.startsWith("查询最新官推")) {
                 GlobalScope.launch {
                     getTimeline(group)
                 }
             }
-            repeatingSwitch = if (messageText == lastMessage && repeatingSwitch){
-                group.sendMessage(messageText.toPlainText())
-                false
-            } else true
 
-            lastMessage = messageText
+            // 复读功能
+            // TODO: 做成独立插件
+            if (message == lastMessage) {
+                if (repeatingCount == 2) {
+                    group.sendMessage(message)
+                }
+                repeatingCount++
+            } else {
+                repeatingCount = 1
+            }
+
+
+            lastMessage = message
 
             delay(100L)
         }
