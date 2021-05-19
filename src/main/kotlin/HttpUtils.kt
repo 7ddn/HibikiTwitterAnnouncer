@@ -17,7 +17,7 @@ fun recentSearchUrlGenerator(
     mediaFields : String = "url"
     ) : String {
         return "${PluginConfig.APIs["recent"]}" +
-            "from:$searchTarget" +
+            searchTarget +
             "&expansions=$expansions"+
             "&media.fields=$mediaFields"+
             if (nextToken!="") "&next_token=$nextToken" else ""
@@ -27,12 +27,13 @@ fun recentSearchUrlGenerator(
 //            "&expansions=attachments.media_keys" +
 //            "&media.fields=url"
 
-val bearerToken = "AAAAAAAAAAAAAAAAAAAAAMHmPgEAAAAAnk1ZHn0GeuadsXZOBD0B1a7EsX0%3DlkUm5FLfeCCSDI8IeCxEF6KxdXsmmG0pvrExyDjx19L4gvNkA8";
+const val bearerToken = "AAAAAAAAAAAAAAAAAAAAAMHmPgEAAAAAnk1ZHn0GeuadsXZOBD0B1a7EsX0%3DlkUm5FLfeCCSDI8IeCxEF6KxdXsmmG0pvrExyDjx19L4gvNkA8"
 val proxy =  Proxy(Proxy.Type.HTTP, InetSocketAddress(
     PluginConfig.Proxies["host"].toString(),
     PluginConfig.Proxies["port"].toString().toInt()))
 
 fun httpGet(url: String): JSONObject{
+    PluginMain.logger.info("Now Getting from $url")
     val link = URL(url)
 
     val connection = link.openConnection(proxy) as HttpURLConnection

@@ -51,7 +51,8 @@ object PluginMain : KotlinPlugin(
             // 查询官推
             if (messageText.startsWith("查询")) {
                 val patternYGO = Regex("查询\\d+条官推")
-                val patternOther = Regex("^查询([0-9a-zA-Z_]+)的(\\d+)条推文$")
+                val patternUser = Regex("^查询([0-9a-zA-Z_]+)的(\\d+)条推文$")
+                val patternAbout = Regex("^查询关于(.+)的(\\d+)条推文$")
                 when {
                     messageText == "查询最新官推" -> {
                         GlobalScope.launch {
@@ -66,8 +67,19 @@ object PluginMain : KotlinPlugin(
                             )
                         }
                     }
-                    patternOther.matches(messageText) -> {
-                        val matches = patternOther.findAll(messageText)
+                    patternUser.matches(messageText) -> {
+                        val matches = patternUser.findAll(messageText)
+                        GlobalScope.launch {
+                            getTimeline(
+                                inquirerGroup = group,
+                                startCount = 0,
+                                maxCount = matches.map{it.groupValues[2]}.joinToString().toInt(),
+                                target = "from:" + matches.map{it.groupValues[1]}.joinToString(),
+                            )
+                        }
+                    }
+                    patternAbout.matches(messageText) -> {
+                        val matches = patternAbout.findAll(messageText)
                         GlobalScope.launch {
                             getTimeline(
                                 inquirerGroup = group,
