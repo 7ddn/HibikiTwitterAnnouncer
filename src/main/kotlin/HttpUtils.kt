@@ -11,13 +11,13 @@ import java.net.URL
 
 
 fun recentSearchUrlGenerator(
-    searchTarget: String = "from:YuGiOh_OCG_INFO",
+    searchTarget: String = "YuGiOh_OCG_INFO",
     nextToken : String = "",
     expansions : String = "attachments.media_keys",
     mediaFields : String = "url"
     ) : String {
         return "${PluginConfig.APIs["recent"]}" +
-            searchTarget +
+            "from:$searchTarget" +
             "&expansions=$expansions"+
             "&media.fields=$mediaFields"+
             if (nextToken!="") "&next_token=$nextToken" else ""

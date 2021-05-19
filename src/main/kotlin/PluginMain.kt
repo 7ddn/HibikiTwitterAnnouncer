@@ -49,10 +49,37 @@ object PluginMain : KotlinPlugin(
             //    "this code = ${message.serializeToMiraiCode()}")
 
             // 查询官推
-            if (messageText.startsWith("查询最新官推")) {
-                GlobalScope.launch {
-                    getTimeline(group)
+            if (messageText.startsWith("查询")) {
+                val patternYGO = Regex("查询\\d+条官推")
+                val patternOther = Regex("^查询([0-9a-zA-Z_]+)的(\\d+)条推文$")
+                when {
+                    messageText == "查询最新官推" -> {
+                        GlobalScope.launch {
+                            getTimeline(group)
+                        }
+                    }
+                    patternYGO.matches(messageText) -> {
+                        GlobalScope.launch {
+                            getTimeline(inquirerGroup = group,
+                                startCount = 0,
+                                maxCount = Regex("\\d+").find(messageText)?.value?.toInt() ?: 1
+                            )
+                        }
+                    }
+                    patternOther.matches(messageText) -> {
+                        val matches = patternOther.findAll(messageText)
+                        GlobalScope.launch {
+                            getTimeline(
+                                inquirerGroup = group,
+                                startCount = 0,
+                                maxCount = matches.map{it.groupValues[2]}.joinToString().toInt(),
+                                target = matches.map{it.groupValues[1]}.joinToString(),
+                            )
+                        }
+                    }
                 }
+
+
             }
 
             // 复读功能

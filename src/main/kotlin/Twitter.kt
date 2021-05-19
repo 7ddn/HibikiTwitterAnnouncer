@@ -19,11 +19,13 @@ suspend fun getTimeline(
     nextToken: String = "",
     maxCount: Int = 1,
     startCount: Int = 0,
+    target: String = "from:YuGiOh_OCG_INFO",
 ) {
     //val timeline = APIs["baseRecent"]?.let { httpGet(it) }
-    val timeline = httpGet(recentSearchUrlGenerator(nextToken = nextToken))
+    val timeline = httpGet(recentSearchUrlGenerator(nextToken = nextToken, searchTarget = target))
     val tweetData = timeline?.getJSONArray("data")
     val tweetMedia = timeline?.getJSONObject("includes")?.getJSONArray("media")
+    //PluginMain.logger.info("一共有${tweetMedia?.size}张图片")
     val tweetMeta = JSON.parseObject(timeline?.getJSONObject("meta").toString())
     //PluginMain.logger.info("${tweetMeta.toString()}")
     globalNextToken = tweetMeta?.getString("next_token")
@@ -39,11 +41,12 @@ suspend fun getTimeline(
         if (newestTweet != null) {
             if (newestTweet.containsKey("attachments")) {
                 val mediaKeys = newestTweet.getJSONObject("attachments").getJSONArray("media_keys").toList();
+                //PluginMain.logger.info("这条tweet的配图id分别是${mediaKeys.toString()}")
                 mediaUrls.clear()
                 for (i in 0 until tweetMedia?.size!!) {
                     val media = tweetMedia.getJSONObject(i)
                     if (media.getString("media_key").toString() in mediaKeys) {
-                        PluginMain.logger.info(media.toString())
+                        //PluginMain.logger.info(media.toString())
                         mediaUrls.add(media.getString("url"))
                     }
                 }
@@ -66,8 +69,8 @@ suspend fun getTimeline(
                 )
                 //inquirerGroup.sendMessage(it.toString())
             }
+            mediaUrls.clear()
         }
-
 
     }
 
