@@ -3,6 +3,7 @@ package org.sddn.hibiki.plugin
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
 import net.mamoe.mirai.event.events.GroupMessageEvent
@@ -30,6 +31,8 @@ object PluginMain : KotlinPlugin(
         // author 和 info 可以删除.
     }
 ) {
+    lateinit var bot : Bot
+
     override fun onEnable() {
         logger.info { "Plugin loaded" }
         //logger.info{PluginConfig.APIs["recent"].toString()}
@@ -41,6 +44,8 @@ object PluginMain : KotlinPlugin(
         var lastMessage: MessageChain = PlainText("").serializeToMiraiCode().deserializeMiraiCode()
         var repeatingCount = 1
         //Logger.getLogger(OkHttpClient.javaClass.name).level = Level.FINE
+
+
 
         globalEventChannel().subscribeAlways<GroupMessageEvent> {
             val messageText = message.contentToString()
@@ -61,7 +66,11 @@ object PluginMain : KotlinPlugin(
                         "获取<number>条来自@<twitterID>的最新推文,其中<number>为阿拉伯数字," +
                         "<twitterID>为只包含英文/数字/下划线的标准TwitterID\n\r") +
                     PlainText("查询关于<object>的<number>条推文 ->" +
-                        "获取包含<object>关键字的<number>条推文，其中<object>为任意UTF-8标准字符,<number>为阿拉伯数字")
+                        "获取包含<object>关键字的<number>条推文，其中<object>为任意UTF-8标准字符,<number>为阿拉伯数字\n\r") +
+                    PlainText("添加订阅 ->"+
+                        "添加对游戏王官推的新推文自动推送\r\n") +
+                    PlainText("取消订阅 ->" +
+                        "取消对游戏王官推的新推文自动推送")
                 group.sendMessage(toSay)
             }
 
@@ -73,12 +82,12 @@ object PluginMain : KotlinPlugin(
                 when {
                     messageText == "查询最新官推" -> {
                         GlobalScope.launch {
-                            getTimeline(group)
+                            getTimelineAndSendMessage(group)
                         }
                     }
                     patternYGO.matches(messageText) -> {
                         GlobalScope.launch {
-                            getTimeline(inquirerGroup = group,
+                            getTimelineAndSendMessage(inquirerGroup = group,
                                 startCount = 0,
                                 maxCount = Regex("\\d+").find(messageText)?.value?.toInt() ?: 1
                             )
@@ -87,7 +96,7 @@ object PluginMain : KotlinPlugin(
                     patternUser.matches(messageText) -> {
                         val matches = patternUser.findAll(messageText)
                         GlobalScope.launch {
-                            getTimeline(
+                            getTimelineAndSendMessage(
                                 inquirerGroup = group,
                                 startCount = 0,
                                 maxCount = matches.map{it.groupValues[2]}.joinToString().toInt(),
@@ -98,7 +107,7 @@ object PluginMain : KotlinPlugin(
                     patternAbout.matches(messageText) -> {
                         val matches = patternAbout.findAll(messageText)
                         GlobalScope.launch {
-                            getTimeline(
+                            getTimelineAndSendMessage(
                                 inquirerGroup = group,
                                 startCount = 0,
                                 maxCount = matches.map{it.groupValues[2]}.joinToString().toInt(),
@@ -109,6 +118,25 @@ object PluginMain : KotlinPlugin(
                 }
 
 
+            }
+
+            // 自动推送
+            if (messageText == "添加订阅") {
+                if (PluginData.groups.contains(group.id)){
+                    group.sendMessage("已经添加过订阅了哦")
+                } else {
+                    PluginData.groups.add(group.id)
+                    group.sendMessage("添加订阅成功")
+                }
+            }
+
+            if (messageText == "取消订阅") {
+                if (PluginData.groups.contains(group.id)){
+                    PluginData.groups.remove(group.id)
+                    group.sendMessage("呜呜 以后不说了哦")
+                } else {
+                    group.sendMessage("哎呀，本来就没有订阅呢")
+                }
             }
 
             // 复读功能
@@ -154,6 +182,22 @@ object PluginMain : KotlinPlugin(
 
 
             delay(100L)
+        }
+
+        PluginMain.launch {
+
+            while (true){
+                try{
+                    bot = Bot.instances[0]
+                    bot
+                    break
+                } catch (e:Exception){
+                    logger.info(e.message)
+                    delay(1000)
+                }
+            }
+
+            checkNewTweet(bot)
         }
     }
 }

@@ -1,6 +1,8 @@
 package org.sddn.hibiki.plugin
 
 import com.alibaba.fastjson.JSON
+import com.alibaba.fastjson.JSONArray
+import com.alibaba.fastjson.JSONObject
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage
@@ -11,8 +13,21 @@ import kotlin.math.min
 
 var globalNextToken: String? = ""
 
+suspend fun getNewestTweet (
+    target: String = "from:YuGiOh_OCG_INFO"
+) : JSONObject? {
+    return try {
+        val timeline = httpGet(recentSearchUrlGenerator(
+            searchTarget = target
+        ))
+        timeline
+    } catch (e : Exception) {
+        PluginMain.logger.info(e.message)
+        null
+    }
+}
 
-suspend fun getTimeline(
+suspend fun getTimelineAndSendMessage(
     inquirerGroup: Group,
     nextToken: String = "",
     maxCount: Int = 1,
@@ -38,7 +53,7 @@ suspend fun getTimeline(
         //PluginMain.logger.info("${tweetMeta.toString()}")
         globalNextToken = tweetMeta?.getString("next_token")
         val resultCount = tweetMeta?.getString("result_count").toString()
-        val mediaUrls: MutableList<String> = mutableListOf("")
+        var mediaUrls: MutableList<String> = mutableListOf()
 
         PluginMain.logger.info { "成功获取$resultCount" + "条tweets" }
         when {
@@ -54,7 +69,6 @@ suspend fun getTimeline(
         for (count in startCount until min(startCount + maxCount, min(10, resultCount.toInt()))) {
             var toSay: Message = buildMessageChain { }
 
-            mediaUrls.clear()
             val newestTweet = tweetData?.getJSONObject(count)
             val newestID = newestTweet?.getString("id").toString()
             val newestText = newestTweet?.getString("text").toString()
@@ -64,14 +78,7 @@ suspend fun getTimeline(
                 if (newestTweet.containsKey("attachments")) {
                     val mediaKeys = newestTweet.getJSONObject("attachments").getJSONArray("media_keys").toList()
                     //PluginMain.logger.info("这条tweet的配图id分别是${mediaKeys.toString()}")
-                    mediaUrls.clear()
-                    for (i in 0 until tweetMedia?.size!!) {
-                        val media = tweetMedia.getJSONObject(i)
-                        if (media.getString("media_key").toString() in mediaKeys) {
-                            //PluginMain.logger.info(media.toString())
-                            mediaUrls.add(media.getString("url"))
-                        }
-                    }
+                    mediaUrls = getMediaUrlsFromKeys(tweetMedia, mediaKeys)
                 }
 
             }
@@ -81,7 +88,7 @@ suspend fun getTimeline(
                 if (users.getString("id").toString() == authorID){
                     toSay = PlainText(
                         users.getString("name").toString() +
-                        "(${users.getString("username")}):\r\n")
+                        "(@${users.getString("username")}):\r\n")
                 }
             }
 
@@ -120,4 +127,19 @@ suspend fun getTimeline(
     }
 
 
+}
+
+fun getMediaUrlsFromKeys(
+    tweetMedia: JSONArray?,
+    mediaKeys: List<Any>,
+) : MutableList<String>{
+    val mediaUrls:MutableList<String> = mutableListOf()
+    for (i in 0 until tweetMedia?.size!!) {
+        val media = tweetMedia.getJSONObject(i)
+        if (media.getString("media_key").toString() in mediaKeys) {
+            //PluginMain.logger.info(media.toString())
+            mediaUrls.add(media.getString("url"))
+        }
+    }
+    return mediaUrls
 }
