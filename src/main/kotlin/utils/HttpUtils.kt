@@ -17,6 +17,7 @@ fun recentSearchUrlGenerator(
     nextToken: String = "",
     expansions: String = "attachments.media_keys",
     mediaFields: String = "url",
+    sinceID: String = "0",
     maxResults: Int = 10,
 ): String {
     return "${PluginConfig.APIs["recent"]}" +
@@ -24,7 +25,8 @@ fun recentSearchUrlGenerator(
         "&expansions=author_id,$expansions" +
         "&media.fields=$mediaFields" +
         "&user.fields=username,name" +
-        if (nextToken != "") "&next_token=$nextToken" else ""
+        if (nextToken != "") "&next_token=$nextToken" else "" +
+        if (sinceID != "0") "&since_id=$sinceID" else ""
 }
 
 //"baseRecent" to "https://api.twitter.com/2/tweets/search/recent?query=from:YuGiOh_OCG_INFO" +

@@ -10,6 +10,7 @@ import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage
 import net.mamoe.mirai.utils.info
 import utils.httpGet
 import pluginController.PluginConfig
+import pluginController.PluginData
 import pluginController.PluginMain
 import utils.proxy
 import utils.recentSearchUrlGenerator
@@ -23,9 +24,12 @@ suspend fun getNewestTweet(
     target: String = "from:YuGiOh_OCG_INFO"
 ): JSONObject? {
     return try {
+        PluginMain.logger.info(target.substring(5))
         val timeline = httpGet(
             recentSearchUrlGenerator(
-                searchTarget = target
+                searchTarget = target,
+                sinceID = PluginData.lastTweetID[target.substring(5)].toString()
+                //去掉from:
             )
         )
         timeline
@@ -52,17 +56,8 @@ suspend fun getTimelineAndSendMessage(
                 maxResults = maxResults
             )
         )
-
-        val tweetData = timeline.getJSONArray("data")
-        val tweetMedia = timeline.getJSONObject("includes")?.getJSONArray("media")
-        val authors = timeline.getJSONObject("includes")?.getJSONArray("users")
-        //PluginMain.logger.info("一共有${tweetMedia?.size}张图片")
         val tweetMeta = JSON.parseObject(timeline.getJSONObject("meta").toString())
-        //PluginMain.logger.info("${tweetMeta.toString()}")
-        globalNextToken = tweetMeta?.getString("next_token")
         val resultCount = tweetMeta?.getString("result_count").toString()
-        var mediaUrls: MutableList<String> = mutableListOf()
-
         PluginMain.logger.info { "成功获取$resultCount" + "条tweets" }
         when {
             resultCount.toInt() > 0 ->
@@ -73,6 +68,18 @@ suspend fun getTimelineAndSendMessage(
                         + Image("{29635AF7-C078-33BB-1317-E4A96600BC25}.png")
                 )
         }
+
+        val tweetData = timeline.getJSONArray("data")
+        val tweetMedia = timeline.getJSONObject("includes")?.getJSONArray("media")
+        val authors = timeline.getJSONObject("includes")?.getJSONArray("users")
+        //PluginMain.logger.info("一共有${tweetMedia?.size}张图片")
+
+        //PluginMain.logger.info("${tweetMeta.toString()}")
+        globalNextToken = tweetMeta?.getString("next_token")
+
+        var mediaUrls: MutableList<String> = mutableListOf()
+
+
 
         for (count in startCount until min(startCount + maxCount, min(10, resultCount.toInt()))) {
             var toSay: Message = buildMessageChain { }

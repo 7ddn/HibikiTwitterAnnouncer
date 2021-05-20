@@ -1,10 +1,12 @@
 package twitter
 
+import com.alibaba.fastjson.JSON
 import kotlinx.coroutines.delay
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage
+import net.mamoe.mirai.utils.info
 import pluginController.PluginConfig
 import pluginController.PluginData
 import pluginController.PluginMain
@@ -78,15 +80,22 @@ private suspend fun singleTryForNewTweet(group: Group, target: String) {
         //"from:hibikiprprpr"
         "from:$target"
     ) ?: throw Exception("Fail on getting newest Tweet")
-    val data = newestTweets.getJSONArray("data").getJSONObject(0)
-    val newestText = data.getString("text")
-    val newestTweetID = data.getString("id")
-    if (newestTweetID == PluginData.lastTweetID[target]) {
+
+    val tweetMeta = JSON.parseObject(newestTweets.getJSONObject("meta").toString())
+    val resultCount = tweetMeta?.getString("result_count").toString()
+    PluginMain.logger.info { "成功获取$resultCount" + "条tweets" }
+
+    if (resultCount == "0") {
         PluginMain.logger.info("@${target}暂时没有更新")
         delay(1000L)
         return
         //throw (Exception("Nothing New"))
     }
+
+    val data = newestTweets.getJSONArray("data").getJSONObject(0)
+    val newestText = data.getString("text")
+    val newestTweetID = data.getString("id")
+
     PluginData.lastTweetID[target] = newestTweetID
     //PluginMain.logger.info("Now trying to get mediaUrls")
     val mediaUrls = if (data.containsKey("attachments")) {
