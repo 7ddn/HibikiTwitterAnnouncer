@@ -38,9 +38,6 @@ suspend fun checkNewTweet(bot: Bot) {
 
         PluginMain.logger.info("检测开始")
 
-        if (!PluginConfig.newCardAnnouncerSwitches) {
-            continue
-        }
         if (PluginData.groups.isEmpty()) {
             continue
         }
@@ -100,6 +97,12 @@ private suspend fun singleTryForNewTweet(group: Group, target: String) {
         toSay += newestText.toPlainText()
         //inquirerGroup.sendMessage(newestText.toPlainText())
     }
+    // 由于tx不让一次发送约100(104?)个字符以上的PlainText，故此处使用特殊处理分割,可以通过命令开关
+    // TODO: 当机器人可以正常运行后删除
+
+    if (PluginConfig.ifNeedToSplit) toSay = sendAndSplitToUnder100(toSay.content.toPlainText(), group)
+
+
     if (!mediaUrls.isNullOrEmpty()) {
         PluginMain.logger.info("有${mediaUrls.size}张图片")
         mediaUrls.forEach {

@@ -12,6 +12,7 @@ import net.mamoe.mirai.message.code.MiraiCode.deserializeMiraiCode
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.toMessageChain
+import net.mamoe.mirai.message.data.toPlainText
 import net.mamoe.mirai.utils.info
 import kotlin.random.Random
 
@@ -55,6 +56,17 @@ object PluginMain : KotlinPlugin(
             //logger.info("last code = ${lastMessage.serializeToMiraiCode()} & " +
             //    "this code = ${message.serializeToMiraiCode()}")
 
+
+            // 由于tx不让一次发送约100(104?)个字符以上的PlainText，故有些地方使用特殊处理分割,在这里开关该功能
+            // TODO: 当机器人可以正常运行后删除
+            if (messageText == "开启分割") {
+                PluginConfig.ifNeedToSplit = true
+                group.sendMessage("开启长句分割功能")
+            } else if (messageText == "关闭分割") {
+                PluginConfig.ifNeedToSplit = false
+                group.sendMessage("关闭长句分割功能，可能会导致某些消息无法发送")
+            }
+
             // 帮助
 
             if (messageText == "帮助") {
@@ -89,11 +101,11 @@ object PluginMain : KotlinPlugin(
                 toSay =
                     PlainText(
                         "添加订阅 ->" +
-                            "添加对游戏王官推的新推文自动推送\r\n"
+                            "启用自动推送功能\r\n"
                     ) +
                         PlainText(
                             "取消订阅 ->" +
-                                "取消对游戏王官推的新推文自动推送"
+                                "关闭自动推送功能"
                         )
                 delay(500L)
                 group.sendMessage(toSay)
@@ -168,7 +180,7 @@ object PluginMain : KotlinPlugin(
                     PluginData.ifGroupListHasChanged = true
                 }
             }
-            val patternAddListener = Regex("^关注([a-zA-Z_]+)$")
+            val patternAddListener = Regex("^关注([a-zA-Z0-9_]+)$")
             if (patternAddListener.matches(messageText)) {
                 if (!PluginData.groups.contains(group.id)) {
                     group.sendMessage("还没有添加订阅呢，请先订阅再开始建立关注列表哦")
@@ -189,10 +201,10 @@ object PluginMain : KotlinPlugin(
                 }
             }
 
-            val patternRemoveListener = Regex("^取消关注([a-zA-z_]+)$")
+            val patternRemoveListener = Regex("^取消关注([a-zA-z0-9_]+)$")
             if (patternRemoveListener.matches(messageText)) {
                 if (!PluginData.groups.contains(group.id)) {
-                    group.sendMessage("还没有添加订阅呢，清闲订阅再开始管理关注列表哦")
+                    group.sendMessage("还没有添加订阅呢，请先订阅再开始管理关注列表哦")
                 } else {
                     val matches = patternRemoveListener.findAll(messageText)
                     val removingUserName = matches.map { it.groupValues[1] }.joinToString()
@@ -202,6 +214,26 @@ object PluginMain : KotlinPlugin(
                         group.sendMessage("以后不看@${removingUserName}了哦")
                         PluginData.listeningListByGroup[group.id]!!.remove(removingUserName)
                     }
+                }
+            }
+
+            if (messageText == "查看订阅列表") {
+                if (!PluginData.groups.contains(group.id)) {
+                    group.sendMessage("还没有添加订阅呢，请先订阅再开始管理关注列表哦")
+                } else {
+                    group.sendMessage("本群订阅列表共有${PluginData.listeningListByGroup[group.id]!!.size}位推主")
+                    var toSay: String = ""
+                    PluginData.listeningListByGroup[group.id]!!.forEach {
+                        toSay += "@$it"
+                    }
+                    // 由于tx不让一次发送约100(104?)个字符以上的PlainText，故此处使用特殊处理分割,可以通过命令开关
+                    // TODO: 当机器人可以正常运行后删除
+
+                    group.sendMessage(
+                        if (PluginConfig.ifNeedToSplit)
+                            sendAndSplitToUnder100(toSay.toPlainText(), group)
+                        else toSay.toPlainText()
+                    )
                 }
             }
 
@@ -258,6 +290,7 @@ object PluginMain : KotlinPlugin(
             }
 
             lastMessage = message
+            logger.info(message.contentToString().length.toString())
 
 
             delay(100L)

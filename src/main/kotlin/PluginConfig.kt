@@ -26,7 +26,7 @@ object PluginConfig : AutoSavePluginConfig("config") {
         )
     )
 
-    var newCardAnnouncerSwitches by value(true)
+    var ifNeedToSplit : Boolean by value(false)
 
 
 }

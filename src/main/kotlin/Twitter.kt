@@ -3,6 +3,7 @@ package org.sddn.hibiki.plugin
 import com.alibaba.fastjson.JSON
 import com.alibaba.fastjson.JSONArray
 import com.alibaba.fastjson.JSONObject
+import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage
@@ -100,6 +101,12 @@ suspend fun getTimelineAndSendMessage(
                 toSay += newestText.toPlainText()
                 //inquirerGroup.sendMessage(newestText.toPlainText())
             }
+
+            // 由于tx不让一次发送约100(104?)个字符以上的PlainText，故此处使用特殊处理分割,可以通过命令开关
+            // TODO: 当机器人可以正常运行后删除
+
+            if (PluginConfig.ifNeedToSplit) toSay = sendAndSplitToUnder100(toSay.content.toPlainText(), inquirerGroup)
+
             if (mediaUrls.isNotEmpty()) {
                 PluginMain.logger.info("有${mediaUrls.size}张图片")
                 mediaUrls.forEach {
@@ -115,6 +122,7 @@ suspend fun getTimelineAndSendMessage(
                 }
                 mediaUrls.clear()
             }
+
             if (!toSay.isContentEmpty()) inquirerGroup.sendMessage(toSay)
 
         }
@@ -162,4 +170,15 @@ fun getMediaUrlsFromKeys(
         }
     }
     return mediaUrls
+}
+
+suspend fun sendAndSplitToUnder100 (message : PlainText, target: Contact) : MessageChain { //将要发送的PlainText拆分成最长99的字节并发送
+    PluginMain.logger.info("正在分割长句$message")
+    var messageText = message.content
+    while (messageText.length > 99){
+        val sub100 =  messageText.substring(0, 99)
+        target.sendMessage(sub100.toPlainText())
+        messageText = messageText.substring(99, messageText.length - 1)
+    }
+    return messageText.toPlainText().toMessageChain()
 }
