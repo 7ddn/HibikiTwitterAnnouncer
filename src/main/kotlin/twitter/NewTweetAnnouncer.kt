@@ -53,7 +53,7 @@ suspend fun checkNewTweet(bot: Bot) {
                     return@lit
                 }
                 val listenerList = PluginData.listeningListByGroup[it.id] as MutableSet<String>
-                PluginMain.logger.info("本群订阅列表共有${listenerList.size}位推主")
+                PluginMain.logger.info("群${it.name}订阅列表共有${listenerList.size}位推主")
                 if (listenerList.isNullOrEmpty()) return@lit
                 listenerList.forEach {
                     singleTryForNewTweet(thisGroup, it)
@@ -102,7 +102,9 @@ private suspend fun singleTryForNewTweet(group: Group, target: String) {
         //inquirerGroup.sendMessage(newestText.toPlainText())
     }
     // 由于tx不让新号一次发送约100(104?)个字符以上的PlainText，故此处使用特殊处理分割,可以通过命令开关
-    group.sendMessage("有关注的推主更新了哦")
+
+    PluginMain.logger.info("正在向群${group.name}发送推送")
+    group.sendMessage("关注的推主@${target}有新推了哦")
 
     if (PluginConfig.ifNeedToSplit) toSay = sendAndSplitToUnder100(toSay.content.toPlainText(), group)
 

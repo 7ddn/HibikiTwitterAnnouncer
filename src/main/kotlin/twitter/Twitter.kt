@@ -169,7 +169,7 @@ fun getMediaUrlsFromKeys(
     val mediaUrls: MutableList<String> = mutableListOf()
     for (i in 0 until tweetMedia?.size!!) {
         val media = tweetMedia.getJSONObject(i)
-        if (media.getString("media_key").toString() in mediaKeys) {
+        if (media.getString("type") == "photo" && media.getString("media_key").toString() in mediaKeys) {
             //PluginMain.logger.info(media.toString())
             mediaUrls.add(media.getString("url"))
         }

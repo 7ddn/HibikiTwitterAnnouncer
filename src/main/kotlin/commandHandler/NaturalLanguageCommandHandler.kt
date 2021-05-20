@@ -70,6 +70,20 @@ suspend fun GroupMessageEvent.messageEventHandler(messageText: String) {
                         "取消对@<username>的新推文的自动转发"
                 )
         group.sendMessage(toSay)
+        toSay =
+            PlainText(
+                "查看订阅列表 ->" +
+                    "查看本群已经订阅的推主列表"
+            ).toMessageChain()
+        group.sendMessage(toSay)
+        toSay =
+            PlainText("开启分割 ->" +
+                "开启对长句的自动分割，如果bot能正确获取推文却无法发送请开启该项").toMessageChain()
+        group.sendMessage(toSay)
+        toSay =
+            PlainText("关闭分割 ->" +
+                "关闭对长句的自动分割").toMessageChain()
+        group.sendMessage(toSay)
 
     }
 
