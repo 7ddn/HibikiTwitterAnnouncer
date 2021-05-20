@@ -1,10 +1,14 @@
-package org.sddn.hibiki.plugin
+package twitter
 
 import kotlinx.coroutines.delay
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage
+import pluginController.PluginConfig
+import pluginController.PluginData
+import pluginController.PluginMain
+import utils.proxy
 import java.net.URL
 
 suspend fun checkNewTweet(bot: Bot) {
@@ -97,8 +101,8 @@ private suspend fun singleTryForNewTweet(group: Group, target: String) {
         toSay += newestText.toPlainText()
         //inquirerGroup.sendMessage(newestText.toPlainText())
     }
-    // 由于tx不让一次发送约100(104?)个字符以上的PlainText，故此处使用特殊处理分割,可以通过命令开关
-    // TODO: 当机器人可以正常运行后删除
+    // 由于tx不让新号一次发送约100(104?)个字符以上的PlainText，故此处使用特殊处理分割,可以通过命令开关
+    group.sendMessage("有关注的推主更新了哦")
 
     if (PluginConfig.ifNeedToSplit) toSay = sendAndSplitToUnder100(toSay.content.toPlainText(), group)
 
@@ -119,7 +123,6 @@ private suspend fun singleTryForNewTweet(group: Group, target: String) {
         mediaUrls.clear()
     }
     if (!toSay.isContentEmpty()) {
-        group.sendMessage("有关注的推主更新了哦")
         group.sendMessage(toSay)
         delay(2000L)
     }

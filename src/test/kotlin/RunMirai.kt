@@ -6,6 +6,7 @@ import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.enable
 import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.load
 import net.mamoe.mirai.console.terminal.MiraiConsoleTerminalLoader
 import net.mamoe.mirai.utils.BotConfiguration
+import pluginController.PluginMain
 
 suspend fun main() {
     MiraiConsoleTerminalLoader.startAsDaemon()

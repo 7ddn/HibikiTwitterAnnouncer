@@ -1,7 +1,9 @@
-package org.sddn.hibiki.plugin
+package utils
 
 import com.alibaba.fastjson.JSON
 import com.alibaba.fastjson.JSONObject
+import pluginController.PluginConfig
+import pluginController.PluginMain
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.net.HttpURLConnection

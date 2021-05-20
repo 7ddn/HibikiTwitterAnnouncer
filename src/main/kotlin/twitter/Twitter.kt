@@ -1,4 +1,4 @@
-package org.sddn.hibiki.plugin
+package twitter
 
 import com.alibaba.fastjson.JSON
 import com.alibaba.fastjson.JSONArray
@@ -8,6 +8,11 @@ import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage
 import net.mamoe.mirai.utils.info
+import utils.httpGet
+import pluginController.PluginConfig
+import pluginController.PluginMain
+import utils.proxy
+import utils.recentSearchUrlGenerator
 import java.net.URL
 import java.net.URLEncoder
 import kotlin.math.min
