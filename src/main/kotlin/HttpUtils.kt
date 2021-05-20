@@ -12,17 +12,17 @@ import java.net.URL
 
 fun recentSearchUrlGenerator(
     searchTarget: String = "YuGiOh_OCG_INFO",
-    nextToken : String = "",
-    expansions : String = "attachments.media_keys",
-    mediaFields : String = "url",
-    maxResults : Int = 10,
-    ) : String {
-        return "${PluginConfig.APIs["recent"]}" +
-            searchTarget +
-            "&expansions=author_id,$expansions"+
-            "&media.fields=$mediaFields"+
-            "&user.fields=username,name"+
-            if (nextToken!="") "&next_token=$nextToken" else ""
+    nextToken: String = "",
+    expansions: String = "attachments.media_keys",
+    mediaFields: String = "url",
+    maxResults: Int = 10,
+): String {
+    return "${PluginConfig.APIs["recent"]}" +
+        searchTarget +
+        "&expansions=author_id,$expansions" +
+        "&media.fields=$mediaFields" +
+        "&user.fields=username,name" +
+        if (nextToken != "") "&next_token=$nextToken" else ""
 }
 
 //"baseRecent" to "https://api.twitter.com/2/tweets/search/recent?query=from:YuGiOh_OCG_INFO" +
@@ -30,11 +30,14 @@ fun recentSearchUrlGenerator(
 //            "&media.fields=url"
 
 val bearerToken = PluginConfig.Tokens["bearerToken"]
-val proxy =  Proxy(Proxy.Type.HTTP, InetSocketAddress(
-    PluginConfig.Proxies["host"].toString(),
-    PluginConfig.Proxies["port"].toString().toInt()))
+val proxy = Proxy(
+    Proxy.Type.HTTP, InetSocketAddress(
+        PluginConfig.Proxies["host"].toString(),
+        PluginConfig.Proxies["port"].toString().toInt()
+    )
+)
 
-fun httpGet(url: String): JSONObject{
+fun httpGet(url: String): JSONObject {
     if (bearerToken == "") throw Exception("No Available Bearer Token")
 
     PluginMain.logger.info("Now Getting from $url")
@@ -43,18 +46,19 @@ fun httpGet(url: String): JSONObject{
     val connection = link.openConnection(proxy) as HttpURLConnection
     connection.requestMethod = "GET"
     connection.connectTimeout = 5000
-    connection.setRequestProperty("Content-Type","application/json; charset=utf-8")
+    connection.setRequestProperty("Content-Type", "application/json; charset=utf-8")
     connection.setRequestProperty("Authorization", "Bearer $bearerToken")
 
-    try{
+    try {
         val reader = BufferedReader(
-            InputStreamReader(connection.inputStream,"utf-8"))
+            InputStreamReader(connection.inputStream, "utf-8")
+        )
         val output: String = reader.readLine()
         //PluginMain.logger.info("Response = ${output.toString()} ")
 
         return JSON.parseObject(output)
 
-    } catch (exception: Exception){
+    } catch (exception: Exception) {
         PluginMain.logger.info(exception.message)
         throw Exception(exception.message)
     }

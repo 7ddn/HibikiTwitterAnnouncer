@@ -13,15 +13,17 @@ import kotlin.math.min
 
 var globalNextToken: String? = ""
 
-suspend fun getNewestTweet (
+suspend fun getNewestTweet(
     target: String = "from:YuGiOh_OCG_INFO"
-) : JSONObject? {
+): JSONObject? {
     return try {
-        val timeline = httpGet(recentSearchUrlGenerator(
-            searchTarget = target
-        ))
+        val timeline = httpGet(
+            recentSearchUrlGenerator(
+                searchTarget = target
+            )
+        )
         timeline
-    } catch (e : Exception) {
+    } catch (e: Exception) {
         PluginMain.logger.info(e.message)
         null
     }
@@ -85,10 +87,11 @@ suspend fun getTimelineAndSendMessage(
 
             for (i in 0 until authors?.size!!) {
                 val users = authors.getJSONObject(i)
-                if (users.getString("id").toString() == authorID){
+                if (users.getString("id").toString() == authorID) {
                     toSay = PlainText(
                         users.getString("name").toString() +
-                        "(@${users.getString("username")}):\r\n")
+                            "(@${users.getString("username")}):\r\n"
+                    )
                 }
             }
 
@@ -116,24 +119,41 @@ suspend fun getTimelineAndSendMessage(
 
         }
     } catch (e: Exception) {
-            when {
-                e.toString() == "No Available Bearer Token" -> {
-                    inquirerGroup.sendMessage(PlainText(
-                        "哎呀，还没有设置Bearer Token呢") +
+        when {
+            e.toString() == "No Available Bearer Token" -> {
+                inquirerGroup.sendMessage(
+                    PlainText(
+                        "哎呀，还没有设置Bearer Token呢"
+                    ) +
                         Image("{372536B0-2903-CE21-EE53-D89C18BC4363}.jpg")
-                    )
-                }
+                )
             }
+        }
     }
 
 
 }
 
+suspend fun checkUserName(userName: String): String {
+    try {
+        val userData = httpGet(
+            PluginConfig.APIs["usersBy"].toString() +
+                "/username/$userName"
+        )
+        if (userData.containsKey("errors")) throw Exception("No Such User")
+        val name = userData.getJSONObject("data").getString("name")
+        PluginMain.logger.info(name)
+        return name
+    } catch (e: Exception) {
+        throw e
+    }
+}
+
 fun getMediaUrlsFromKeys(
     tweetMedia: JSONArray?,
     mediaKeys: List<Any>,
-) : MutableList<String>{
-    val mediaUrls:MutableList<String> = mutableListOf()
+): MutableList<String> {
+    val mediaUrls: MutableList<String> = mutableListOf()
     for (i in 0 until tweetMedia?.size!!) {
         val media = tweetMedia.getJSONObject(i)
         if (media.getString("media_key").toString() in mediaKeys) {

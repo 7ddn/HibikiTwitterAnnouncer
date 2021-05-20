@@ -18,7 +18,7 @@ jobs:
   build:
 
     name: Gradle-Build
-    
+
     # The type of runner that the job will run on
     runs-on: ubuntu-20.04
 
@@ -27,17 +27,17 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: Checkout
         uses: actions/checkout@v2
-      
+
       # Setup JDK
       - name: Setup Java JDK
         uses: actions/setup-java@v1.4.3
         with:
           java-version: 11
-      
+
       # Validate Gradle Wrapper
       - name: Gradle Wrapper Validation
         uses: gradle/wrapper-validation-action@v1.0.3
-        
+
       # Build
       - name: Make gradlew executable
         run: chmod +x ./gradlew
