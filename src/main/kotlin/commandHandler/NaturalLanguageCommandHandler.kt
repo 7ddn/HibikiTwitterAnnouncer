@@ -84,29 +84,22 @@ suspend fun GroupMessageEvent.messageEventHandler(messageText: String) {
             PlainText("关闭分割 ->" +
                 "关闭对长句的自动分割").toMessageChain()
         group.sendMessage(toSay)
-
+        toSay =
+            PlainText("添加@<username>的过滤器:包含<keyword> ->" +
+                "只推送包含<keyword>的来自<username>的twitter").toMessageChain()
+        group.sendMessage(toSay)
+        toSay =
+            PlainText("添加@<username>的过滤器:不包含<keyword> ->" +
+                "不推送包含<keyword>的来自<username>的twitter").toMessageChain()
+        group.sendMessage(toSay)
+        return
     }
 
     // 查询官推
     if (messageText.startsWith("查询")) {
-        val patternYGO = Regex("查询\\d+条官推")
         val patternUser = Regex("^查询([0-9a-zA-Z_]+)的(\\d+)条推文$")
         val patternAbout = Regex("^查询关于(.+)的(\\d+)条推文$")
         when {
-            messageText == "查询最新官推" -> {
-                GlobalScope.launch {
-                    getTimelineAndSendMessage(group)
-                }
-            }
-            patternYGO.matches(messageText) -> {
-                GlobalScope.launch {
-                    getTimelineAndSendMessage(
-                        inquirerGroup = group,
-                        startCount = 0,
-                        maxCount = Regex("\\d+").find(messageText)?.value?.toInt() ?: 1
-                    )
-                }
-            }
             patternUser.matches(messageText) -> {
                 val matches = patternUser.findAll(messageText)
                 GlobalScope.launch {
@@ -130,7 +123,7 @@ suspend fun GroupMessageEvent.messageEventHandler(messageText: String) {
                 }
             }
         }
-
+        return
 
     }
 
@@ -144,6 +137,7 @@ suspend fun GroupMessageEvent.messageEventHandler(messageText: String) {
             group.sendMessage("添加订阅成功")
             PluginData.ifGroupListHasChanged = true
         }
+        return
     }
     val patternAddListener = Regex("^关注([a-zA-Z0-9_]+)$")
     if (patternAddListener.matches(messageText)) {
@@ -156,6 +150,8 @@ suspend fun GroupMessageEvent.messageEventHandler(messageText: String) {
                 val name = checkUserName(addingUserName)
                 PluginData.listeningListByGroup[group.id]!!.add(addingUserName)
                 PluginData.lastTweetID[addingUserName] = "0"
+                PluginData.filterWith[addingUserName] = mutableSetOf()
+                PluginData.filterWithout[addingUserName] = mutableSetOf()
                 group.sendMessage("开始关注${name}的最新推文了哦")
             } catch (e: Exception) {
                 PluginMain.logger.info("error: ${e.message}")
@@ -164,6 +160,7 @@ suspend fun GroupMessageEvent.messageEventHandler(messageText: String) {
             }
 
         }
+        return
     }
 
     val patternRemoveListener = Regex("^取消关注([a-zA-z0-9_]+)$")
@@ -180,6 +177,7 @@ suspend fun GroupMessageEvent.messageEventHandler(messageText: String) {
                 PluginData.listeningListByGroup[group.id]!!.remove(removingUserName)
             }
         }
+        return
     }
 
     if (messageText == "查看订阅列表") {
@@ -200,6 +198,7 @@ suspend fun GroupMessageEvent.messageEventHandler(messageText: String) {
                 else toSay.toPlainText()
             )
         }
+        return
     }
 
     /*if (messageText == "取消全部订阅") {
@@ -214,5 +213,31 @@ suspend fun GroupMessageEvent.messageEventHandler(messageText: String) {
         } else {
             group.sendMessage("哎呀，本来就没有订阅呢")
         }
+        return
     }
+
+    // filter
+
+    val patternFilterWith = Regex("^添加@([a-zA-Z0-9_]+)的过滤器:包含(.+)$")
+    val patternFilterWithout = Regex("^添加@([a-zA-Z0-9_]+)的过滤器:不包含(.+)$")
+    when{
+        patternFilterWith.matches(messageText) -> {
+            val matches = patternFilterWith.findAll(messageText)
+            val username = matches.map { it.groupValues[1] }.joinToString()
+            val target = matches.map { it.groupValues[2] }.joinToString()
+            PluginData.filterWith[username]!!.add(target)
+            group.sendMessage("以后只听@${username}说关于${target}的事了哦")
+            return
+        }
+        patternFilterWithout.matches(messageText) -> {
+            val matches = patternFilterWithout.findAll(messageText)
+            val username = matches.map { it.groupValues[1] }.joinToString()
+            val target = matches.map { it.groupValues[2] }.joinToString()
+            PluginData.filterWithout[username]!!.add(target)
+            group.sendMessage("以后不听@${username}说关于${target}的事了哦")
+            return
+        }
+    }
+
+
 }

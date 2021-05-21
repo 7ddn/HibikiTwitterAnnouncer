@@ -10,4 +10,6 @@ object PluginData : AutoSavePluginData("data") {
     var ifGroupListHasChanged: Boolean by value(true)
     var lastTweetID: MutableMap<String, String> by value()
     var repeatProbability: Int by value(5) // -1 for disable
+    var filterWith: MutableMap<String, MutableSet<String>> by value()
+    var filterWithout: MutableMap<String, MutableSet<String>> by value()
 }

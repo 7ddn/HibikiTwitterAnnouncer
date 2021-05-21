@@ -83,7 +83,8 @@ private suspend fun singleTryForNewTweet(group: Group, target: String) {
 
     val tweetMeta = JSON.parseObject(newestTweets.getJSONObject("meta").toString())
     val resultCount = tweetMeta?.getString("result_count").toString()
-    PluginMain.logger.info { "成功获取$resultCount" + "条tweets" }
+    PluginMain.logger.info { "成功获取来自${target}的$resultCount" + "条tweets" }
+
 
     if (resultCount == "0") {
         PluginMain.logger.info("@${target}暂时没有更新")
@@ -97,6 +98,29 @@ private suspend fun singleTryForNewTweet(group: Group, target: String) {
     val newestTweetID = data.getString("id")
 
     PluginData.lastTweetID[target] = newestTweetID
+
+    //PluginMain.logger.info(PluginData.filterWith.toString())
+    if (PluginData.filterWith[target]!=null){
+        PluginData.filterWith[target]!!.forEach{
+            if (!newestText.contains(it)) {
+                PluginMain.logger.info("有消息被用户过滤器阻止")
+                //throw Exception("Message Blocked By User Defined Filter")
+                return
+            }
+        }
+    }
+
+    if (PluginData.filterWithout[target]!=null){
+        PluginData.filterWithout[target]!!.forEach{
+            if (newestText.contains(it)) {
+                PluginMain.logger.info("有消息被用户过滤器阻止")
+                //throw Exception("Message Blocked By User Defined Filter")
+                return
+            }
+        }
+    }
+
+
     //PluginMain.logger.info("Now trying to get mediaUrls")
     val mediaUrls = if (data.containsKey("attachments")) {
         getMediaUrlsFromKeys(
@@ -121,7 +145,7 @@ private suspend fun singleTryForNewTweet(group: Group, target: String) {
     if (!mediaUrls.isNullOrEmpty()) {
         PluginMain.logger.info("有${mediaUrls.size}张图片")
         mediaUrls.forEach {
-            PluginMain.logger.info("url = $it")
+            //PluginMain.logger.info("url = $it")
             //inquirerGroup.sendMessage(
             toSay += Image(
                 URL(it).openConnection(proxy).getInputStream()

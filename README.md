@@ -76,3 +76,11 @@ ifNeedToSplit: true
 取消关注<username>
 ````
 取消对@&lt;username>的新推文的自动转发
+````
+添加@<username>的过滤器:包含<keyword>
+````
+只推送包含&lt;keyword>的来自@&lt;username>的过滤器
+````
+添加@<username>的过滤器:不包含<keyword>
+````
+不推送包含&lt;keyword>的来自@&lt;username>的过滤器

@@ -162,7 +162,7 @@ suspend fun checkUserName(userName: String): String {
         )
         if (userData.containsKey("errors")) throw Exception("No Such User")
         val name = userData.getJSONObject("data").getString("name")
-        PluginMain.logger.info(name)
+        // PluginMain.logger.info(name)
         return name
     } catch (e: Exception) {
         throw e
@@ -190,7 +190,7 @@ suspend fun sendAndSplitToUnder100 (message : PlainText, target: Contact) : Mess
     while (messageText.length > 99){
         val sub100 =  messageText.substring(0, 99)
         target.sendMessage(sub100.toPlainText())
-        messageText = messageText.substring(99, messageText.length - 1)
+        messageText = messageText.substring(99, messageText.length)
     }
     return messageText.toPlainText().toMessageChain()
 }

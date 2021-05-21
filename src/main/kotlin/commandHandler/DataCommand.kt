@@ -96,3 +96,5 @@ object StopListen : SimpleCommand(
         }
     }
 }
+
+//TODO: filter

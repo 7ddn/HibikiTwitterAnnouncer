@@ -99,7 +99,7 @@ object PluginMain : KotlinPlugin(
             }
 
             lastMessage = message
-            logger.info(message.contentToString().length.toString())
+            // logger.info(message.contentToString().length.toString())
 
 
             delay(100L)
