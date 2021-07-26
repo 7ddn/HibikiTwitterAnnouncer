@@ -25,13 +25,23 @@ suspend fun getNewestTweet(
 ): JSONObject? {
     return try {
         PluginMain.logger.info(target.substring(5))
-        val timeline = httpGet(
+        var timeline = httpGet(
             recentSearchUrlGenerator(
                 searchTarget = target,
                 sinceID = PluginData.lastTweetID[target.substring(5)].toString()
                 //去掉from:
             )
         )
+        if (timeline.containsKey("errors")){
+            val errorMessage = timeline.getJSONArray("errors").getJSONObject(0).getString("message")
+            if (errorMessage.contains("must be a tweet id created after")){
+                timeline = httpGet(
+                    recentSearchUrlGenerator(
+                        searchTarget = target,
+                    )
+                )
+            }
+        }
         timeline
     } catch (e: Exception) {
         PluginMain.logger.info(e.message)
@@ -115,7 +125,6 @@ suspend fun getTimelineAndSendMessage(
             }
 
             // 由于tx不让一次发送约100(104?)个字符以上的PlainText，故此处使用特殊处理分割,可以通过命令开关
-            // TODO: 当机器人可以正常运行后删除
 
             if (PluginConfig.ifNeedToSplit) toSay = sendAndSplitToUnder100(toSay.content.toPlainText(), inquirerGroup)
 
