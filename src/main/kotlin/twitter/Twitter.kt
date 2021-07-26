@@ -38,13 +38,9 @@ suspend fun getNewestTweet(
             val errorMessage = timeline.getJSONArray("errors").getJSONObject(0).getString("message")
             if (errorMessage.contains("must be a tweet id created after")){
                 val lastTweetIDs = PluginData.lastTweetID
-                for (lastTweetID in lastTweetIDs){
-                    PluginData.lastTweetID[target.substring(5)] = max(PluginData.lastTweetID[target.substring(5)]!!.toLong(), lastTweetID.value.toLong()).toString()
-                }
                 timeline = httpGet(
                     recentSearchUrlGenerator(
                         searchTarget = target,
-                        sinceID = PluginData.lastTweetID[target.substring(5)].toString()
                     )
                 )
             }
