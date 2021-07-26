@@ -3,6 +3,7 @@ package twitter
 import com.alibaba.fastjson.JSON
 import com.alibaba.fastjson.JSONArray
 import com.alibaba.fastjson.JSONObject
+import jdk.tools.jlink.plugin.Plugin
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.message.data.*
@@ -16,6 +17,7 @@ import utils.proxy
 import utils.recentSearchUrlGenerator
 import java.net.URL
 import java.net.URLEncoder
+import kotlin.math.max
 import kotlin.math.min
 
 var globalNextToken: String? = ""
@@ -35,9 +37,14 @@ suspend fun getNewestTweet(
         if (timeline.containsKey("errors")){
             val errorMessage = timeline.getJSONArray("errors").getJSONObject(0).getString("message")
             if (errorMessage.contains("must be a tweet id created after")){
+                val lastTweetIDs = PluginData.lastTweetID
+                for (lastTweetID in lastTweetIDs){
+                    PluginData.lastTweetID[target.substring(5)] = max(PluginData.lastTweetID[target.substring(5)]!!.toLong(), lastTweetID.value.toLong()).toString()
+                }
                 timeline = httpGet(
                     recentSearchUrlGenerator(
                         searchTarget = target,
+                        sinceID = PluginData.lastTweetID[target.substring(5)].toString()
                     )
                 )
             }
