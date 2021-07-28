@@ -3,26 +3,24 @@ package twitter
 import com.alibaba.fastjson.JSON
 import com.alibaba.fastjson.JSONArray
 import com.alibaba.fastjson.JSONObject
-import jdk.tools.jlink.plugin.Plugin
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage
 import net.mamoe.mirai.utils.info
-import utils.httpGet
 import pluginController.PluginConfig
 import pluginController.PluginData
 import pluginController.PluginMain
+import utils.httpGet
 import utils.proxy
 import utils.recentSearchUrlGenerator
 import java.net.URL
 import java.net.URLEncoder
-import kotlin.math.max
 import kotlin.math.min
 
 var globalNextToken: String? = ""
 
-suspend fun getNewestTweet(
+fun getNewestTweet(
     target: String = "from:YuGiOh_OCG_INFO"
 ): JSONObject? {
     return try {
@@ -37,7 +35,6 @@ suspend fun getNewestTweet(
         if (timeline.containsKey("errors")){
             val errorMessage = timeline.getJSONArray("errors").getJSONObject(0).getString("message")
             if (errorMessage.contains("must be a tweet id created after")){
-                val lastTweetIDs = PluginData.lastTweetID
                 timeline = httpGet(
                     recentSearchUrlGenerator(
                         searchTarget = target,
@@ -98,7 +95,7 @@ suspend fun getTimelineAndSendMessage(
             var toSay: Message = buildMessageChain { }
 
             val newestTweet = tweetData?.getJSONObject(count)
-            val newestID = newestTweet?.getString("id").toString()
+            // val newestID = newestTweet?.getString("id").toString()
             val newestText = newestTweet?.getString("text").toString()
             val authorID = newestTweet?.getString("author_id")
 
@@ -166,16 +163,15 @@ suspend fun getTimelineAndSendMessage(
 
 }
 
-suspend fun checkUserName(userName: String): String {
+fun checkUserName(userName: String): String {
     try {
         val userData = httpGet(
             PluginConfig.APIs["usersBy"].toString() +
                 "/username/$userName"
         )
         if (userData.containsKey("errors")) throw Exception("No Such User")
-        val name = userData.getJSONObject("data").getString("name")
         // PluginMain.logger.info(name)
-        return name
+        return userData.getJSONObject("data").getString("name")
     } catch (e: Exception) {
         throw e
     }

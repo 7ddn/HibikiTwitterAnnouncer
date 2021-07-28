@@ -93,7 +93,7 @@ private suspend fun singleTryForNewTweet(group: Group, target: String) {
         //throw (Exception("Nothing New"))
     }
 
-    group.sendMessage("关注的推主@${target}有新推了哦")
+    var ifFirstTosend = true
 
     for (count in 0 until resultCount.toInt()) {
         val data = newestTweets.getJSONArray("data").getJSONObject(count)
@@ -140,6 +140,11 @@ private suspend fun singleTryForNewTweet(group: Group, target: String) {
         // 由于tx不让新号一次发送约100(104?)个字符以上的PlainText，故此处使用特殊处理分割,可以通过命令开关
 
         PluginMain.logger.info("正在向群${group.name}发送推送")
+
+        if (ifFirstTosend) {
+            group.sendMessage("关注的推主@${target}有新推了哦")
+            ifFirstTosend = false
+        }
 
 
         if (PluginConfig.ifNeedToSplit) toSay = sendAndSplitToUnder100(toSay.content.toPlainText(), group)
