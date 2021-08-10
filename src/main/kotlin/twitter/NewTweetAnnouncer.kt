@@ -47,27 +47,28 @@ suspend fun checkNewTweet(bot: Bot) {
         if (PluginData.groups.isEmpty()) {
             continue
         }
-        try {
-            group.forEach lit@{ it ->
-                val thisGroup: Group = it
-                if (PluginData.listeningListByGroup[it.id].isNullOrEmpty()) {
-                    PluginMain.logger.info("本群没有关注列表")
-                    return@lit
-                }
-                val listenerList = PluginData.listeningListByGroup[it.id] as MutableSet<String>
-                PluginMain.logger.info("群${it.name}订阅列表共有${listenerList.size}位推主")
-                if (listenerList.isNullOrEmpty()) return@lit
-                listenerList.forEach {
+
+        group.forEach lit@{ it ->
+            val thisGroup: Group = it
+            if (PluginData.listeningListByGroup[it.id].isNullOrEmpty()) {
+                PluginMain.logger.info("本群没有关注列表")
+                return@lit
+            }
+            val listenerList = PluginData.listeningListByGroup[it.id] as MutableSet<String>
+            PluginMain.logger.info("群${it.name}订阅列表共有${listenerList.size}位推主")
+            if (listenerList.isNullOrEmpty()) return@lit
+            listenerList.forEach l@{
+                try {
                     singleTryForNewTweet(thisGroup, it)
+                }catch (e: Exception) {
+                    PluginMain.logger.info("error: ${e.message} ${e.cause}")
+                    delay(60000L)
+                    return@l
                 }
             }
-
-
-        } catch (e: Exception) {
-            PluginMain.logger.info("error: ${e.message} ${e.cause}")
-            delay(60000L)
-            continue
         }
+
+
         PluginMain.logger.info("检测正常结束")
         delay(60000L)
 
@@ -93,14 +94,14 @@ private suspend fun singleTryForNewTweet(group: Group, target: String) {
         //throw (Exception("Nothing New"))
     }
 
-    var ifFirstTosend = true
+    var ifFirstToSend = true
 
     for (count in 0 until resultCount.toInt()) {
         val data = newestTweets.getJSONArray("data").getJSONObject(count)
         val newestText = data.getString("text")
         val newestTweetID = data.getString("id")
 
-        PluginData.lastTweetID[target] = newestTweetID
+        if (ifFirstToSend) PluginData.lastTweetID[target] = newestTweetID
 
         //PluginMain.logger.info(PluginData.filterWith.toString())
         if (PluginData.filterWith[target]!=null){
@@ -141,9 +142,9 @@ private suspend fun singleTryForNewTweet(group: Group, target: String) {
 
         PluginMain.logger.info("正在向群${group.name}发送推送")
 
-        if (ifFirstTosend) {
+        if (ifFirstToSend) {
             group.sendMessage("关注的推主@${target}有新推了哦")
-            ifFirstTosend = false
+            ifFirstToSend = false
         }
 
 
@@ -155,11 +156,21 @@ private suspend fun singleTryForNewTweet(group: Group, target: String) {
             mediaUrls.forEach {
                 //PluginMain.logger.info("url = $it")
                 //inquirerGroup.sendMessage(
-                toSay += Image(
-                    URL(it).openConnection(proxy).getInputStream()
-                        .uploadAsImage(group)
-                        .imageId
-                )
+                var ifSuccess: Boolean
+                do {
+                    try {
+                        toSay += Image(
+                            URL(it).openConnection(proxy).getInputStream()
+                                .uploadAsImage(group)
+                                .imageId
+                        )
+                        ifSuccess = true
+                    } catch (e:Exception){
+                        PluginMain.logger.info("Error at uploading image: ${e.message}")
+                        ifSuccess = false
+                    }
+                } while (!ifSuccess)
+
                 //)
                 //inquirerGroup.sendMessage(it.toString())
             }
