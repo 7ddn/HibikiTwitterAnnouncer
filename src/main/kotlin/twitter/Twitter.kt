@@ -163,6 +163,23 @@ suspend fun getTimelineAndSendMessage(
 
 }
 
+suspend fun getRealMediaUrlFromTwitterID(id:String):String{
+    return try {
+        val tweet = httpGet(
+            "${PluginConfig.APIs["showSingle"]}" + "id=$id"
+        )
+        val extendedEntities = JSON.parseObject(tweet.getJSONObject("extended_entities").toString())
+        val medias = extendedEntities.getJSONArray("media")
+        val media = medias.getJSONObject(0)
+        val mediaInfo = media.getJSONObject("video_info")
+        mediaInfo.getJSONArray("variants").getJSONObject(0)
+            .getString("url")
+    } catch (e:Exception){
+        println("error at getRealMediaUrlFromTwitterID: $e ")
+        ""
+    }
+}
+
 fun checkUserName(userName: String): String {
     try {
         val userData = httpGet(

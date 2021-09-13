@@ -4,15 +4,19 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import net.mamoe.mirai.event.events.GroupMessageEvent
+import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.toMessageChain
 import net.mamoe.mirai.message.data.toPlainText
+import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage
 import pluginController.PluginConfig
 import pluginController.PluginData
 import pluginController.PluginMain
 import twitter.checkUserName
+import twitter.getRealMediaUrlFromTwitterID
 import twitter.getTimelineAndSendMessage
 import twitter.sendAndSplitToUnder100
+import utils.convertMP4ToGIF
 
 suspend fun GroupMessageEvent.messageEventHandler(messageText: String) {
 
@@ -238,6 +242,34 @@ suspend fun GroupMessageEvent.messageEventHandler(messageText: String) {
             return
         }
     }
+
+    //@相关处理
+    if (messageText.contains("@${bot.id}")){
+        // 抓取gif
+
+        val patternConvertToGIF = Regex("gif([0-9]+)")
+        if (patternConvertToGIF.containsMatchIn(messageText)){
+            val matches = patternConvertToGIF.findAll(messageText)
+            val id = matches.map{ it.groupValues[1]}.joinToString()
+            val url = getRealMediaUrlFromTwitterID(id)
+            if (url!=""){
+                try {
+                    val convertedGIF = convertMP4ToGIF(url)
+                    if (convertedGIF!=null) {
+                        group.sendMessage("成功获取一张图片")
+                        group.sendMessage(Image(
+                            convertedGIF.uploadAsImage(group).imageId
+                        ))
+                    }
+                } catch (e:Exception){
+                    println("error at convert to gif invoke:$e")
+                    group.sendMessage("获取图片失败qwq")
+                }
+            }
+        }
+    }
+
+
 
 
 }
