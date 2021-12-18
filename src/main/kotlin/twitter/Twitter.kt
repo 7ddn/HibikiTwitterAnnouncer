@@ -11,7 +11,7 @@ import net.mamoe.mirai.utils.info
 import pluginController.PluginConfig
 import pluginController.PluginData
 import pluginController.PluginMain
-import utils.httpGet
+import utils.httpGetFromTwitter
 import utils.proxy
 import utils.recentSearchUrlGenerator
 import java.net.URL
@@ -25,7 +25,7 @@ fun getNewestTweet(
 ): JSONObject? {
     return try {
         PluginMain.logger.info(target.substring(5))
-        var timeline = httpGet(
+        var timeline = httpGetFromTwitter(
             recentSearchUrlGenerator(
                 searchTarget = target,
                 sinceID = PluginData.lastTweetID[target.substring(5)].toString()
@@ -35,7 +35,7 @@ fun getNewestTweet(
         if (timeline.containsKey("errors")){
             val errorMessage = timeline.getJSONArray("errors").getJSONObject(0).getString("message")
             if (errorMessage.contains("must be a tweet id created after")){
-                timeline = httpGet(
+                timeline = httpGetFromTwitter(
                     recentSearchUrlGenerator(
                         searchTarget = target,
                     )
@@ -59,7 +59,7 @@ suspend fun getTimelineAndSendMessage(
 ) {
     //val timeline = APIs["baseRecent"]?.let { httpGet(it) }
     try {
-        val timeline = httpGet(
+        val timeline = httpGetFromTwitter(
             recentSearchUrlGenerator(
                 nextToken = nextToken,
                 searchTarget = URLEncoder.encode(target, "utf-8"),
@@ -165,7 +165,7 @@ suspend fun getTimelineAndSendMessage(
 
 suspend fun getRealMediaUrlFromTwitterID(id:String):String{
     return try {
-        val tweet = httpGet(
+        val tweet = httpGetFromTwitter(
             "${PluginConfig.APIs["showSingle"]}" + "id=$id"
         )
         val extendedEntities = JSON.parseObject(tweet.getJSONObject("extended_entities").toString())
@@ -182,7 +182,7 @@ suspend fun getRealMediaUrlFromTwitterID(id:String):String{
 
 fun checkUserName(userName: String): String {
     try {
-        val userData = httpGet(
+        val userData = httpGetFromTwitter(
             PluginConfig.APIs["usersBy"].toString() +
                 "/username/$userName"
         )

@@ -41,7 +41,7 @@ val proxy = Proxy(
     )
 )
 
-fun httpGet(url: String): JSONObject {
+fun httpGetFromTwitter(url: String): JSONObject {
     if (bearerToken == "") throw Exception("No Available Bearer Token")
 
     PluginMain.logger.info("Now Getting from $url")

@@ -17,7 +17,7 @@ import kotlin.random.Random
 
 object PluginMain : KotlinPlugin(
     JvmPluginDescription(
-        id = "org.sddn.hibiki",
+        id = "org.sddn.hibiki.twitter",
         name = "HibikiTwitterAnnouncer",
         version = "0.1.0"
     ) {
