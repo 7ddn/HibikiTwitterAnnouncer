@@ -253,6 +253,7 @@ suspend fun GroupMessageEvent.messageEventHandler(messageText: String) {
             val id = matches.map{ it.groupValues[1]}.joinToString()
             val url = getRealMediaUrlFromTwitterID(id)
             if (url!=""){
+                group.sendMessage("已接收到一条请求，请求的推文媒体地址为$url")
                 try {
                     val convertedGIF = convertMP4ToGIF(url)
                     if (convertedGIF!=null) {
@@ -265,6 +266,8 @@ suspend fun GroupMessageEvent.messageEventHandler(messageText: String) {
                     println("error at convert to gif invoke:$e")
                     group.sendMessage("获取图片失败qwq")
                 }
+            } else {
+                group.sendMessage("已接受到一条请求，但未能获得媒体地址，可能是由于请求的推文不包含媒体附件")
             }
         }
     }

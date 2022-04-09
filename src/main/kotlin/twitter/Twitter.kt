@@ -45,6 +45,18 @@ fun getNewestTweet(
         timeline
     } catch (e: Exception) {
         PluginMain.logger.info(e.message)
+        if (e.message!!.contains("400")) {
+            return try {
+                httpGetFromTwitter(
+                    recentSearchUrlGenerator(
+                        searchTarget = target,
+                    )
+                )
+            } catch(e: Exception) {
+                PluginMain.logger.info(e.message)
+                null
+            }
+        }
         null
     }
 }

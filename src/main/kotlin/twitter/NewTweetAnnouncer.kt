@@ -78,7 +78,6 @@ suspend fun checkNewTweet(bot: Bot) {
 
 private suspend fun singleTryForNewTweet(group: Group, target: String) {
     val newestTweets = getNewestTweet(
-        //"from:hibikiprprpr"
         "from:$target"
     ) ?: throw Exception("Fail on getting newest Tweet")
 
@@ -101,6 +100,8 @@ private suspend fun singleTryForNewTweet(group: Group, target: String) {
         val newestText = data.getString("text")
         val newestTweetID = data.getString("id")
 
+        var flag = false
+
         if (ifFirstToSend) PluginData.lastTweetID[target] = newestTweetID
 
         //PluginMain.logger.info(PluginData.filterWith.toString())
@@ -109,7 +110,7 @@ private suspend fun singleTryForNewTweet(group: Group, target: String) {
                 if (!newestText.contains(it)) {
                     PluginMain.logger.info("有消息被用户过滤器阻止")
                     //throw Exception("Message Blocked By User Defined Filter")
-                    return
+                    flag = true
                 }
             }
         }
@@ -119,11 +120,12 @@ private suspend fun singleTryForNewTweet(group: Group, target: String) {
                 if (newestText.contains(it)) {
                     PluginMain.logger.info("有消息被用户过滤器阻止")
                     //throw Exception("Message Blocked By User Defined Filter")
-                    return
+                    flag = true
                 }
             }
         }
 
+        if (flag) continue
 
         //PluginMain.logger.info("Now trying to get mediaUrls")
         val mediaUrls = if (data.containsKey("attachments")) {
