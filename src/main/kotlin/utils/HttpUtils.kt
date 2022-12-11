@@ -34,7 +34,7 @@ fun recentSearchUrlGenerator(
 //            "&media.fields=url"
 
 val bearerToken = PluginConfig.Tokens["bearerToken"]
-val proxy = Proxy(
+val proxy: Proxy = if (PluginConfig.Proxies["host"] == "-1") Proxy.NO_PROXY else Proxy(
     Proxy.Type.HTTP, InetSocketAddress(
         PluginConfig.Proxies["host"].toString(),
         PluginConfig.Proxies["port"].toString().toInt()

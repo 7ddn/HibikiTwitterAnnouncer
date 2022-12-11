@@ -246,7 +246,6 @@ suspend fun GroupMessageEvent.messageEventHandler(messageText: String) {
     //@相关处理
     if (messageText.contains("@${bot.id}")){
         // 抓取gif
-
         val patternConvertToGIF = Regex("gif([0-9]+)")
         if (patternConvertToGIF.containsMatchIn(messageText)){
             val matches = patternConvertToGIF.findAll(messageText)
@@ -270,6 +269,8 @@ suspend fun GroupMessageEvent.messageEventHandler(messageText: String) {
                 group.sendMessage("已接受到一条请求，但未能获得媒体地址，可能是由于请求的推文不包含媒体附件")
             }
         }
+
+
     }
 
 
