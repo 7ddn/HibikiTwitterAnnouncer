@@ -17,6 +17,6 @@ repositories {
 }
 
 dependencies {
-    implementation("com.alibaba:fastjson:1.2.78")
-    implementation("com.cloudconvert:cloudconvert-java:1.0.7")
+    implementation("com.alibaba:fastjson:2.0.20.graal")
+    implementation("com.cloudconvert:cloudconvert-java:1.2.1")
 }

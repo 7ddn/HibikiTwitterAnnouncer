@@ -131,7 +131,7 @@ private suspend fun singleTryForNewTweet(group: Group, target: String) {
         val mediaUrls = if (data.containsKey("attachments")) {
             getMediaUrlsFromKeys(
                 tweetMedia = newestTweets.getJSONObject("includes").getJSONArray("media"),
-                mediaKeys = data.getJSONObject("attachments").getJSONArray("media_keys")
+                mediaKeys = listOf(data.getJSONObject("attachments").getJSONArray("media_keys"))
             )
         } else null
         //PluginMain.logger.info("Now end getting mediaUrls")

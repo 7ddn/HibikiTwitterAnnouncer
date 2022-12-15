@@ -113,7 +113,7 @@ suspend fun getTimelineAndSendMessage(
 
             if (newestTweet != null) {
                 if (newestTweet.containsKey("attachments")) {
-                    val mediaKeys = newestTweet.getJSONObject("attachments").getJSONArray("media_keys").toList()
+                    val mediaKeys = listOf(newestTweet.getJSONObject("attachments").getJSONArray("media_keys"))
                     //PluginMain.logger.info("这条tweet的配图id分别是${mediaKeys.toString()}")
                     mediaUrls = getMediaUrlsFromKeys(tweetMedia, mediaKeys)
                 }

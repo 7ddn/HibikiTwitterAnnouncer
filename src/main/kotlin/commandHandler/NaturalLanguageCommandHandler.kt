@@ -245,6 +245,20 @@ suspend fun GroupMessageEvent.messageEventHandler(messageText: String) {
 
     //@相关处理
     if (messageText.contains("@${bot.id}")){
+
+        // 抓取媒体地址
+        val patternGetMedia = Regex("media([0-9]+)")
+        if (patternGetMedia.containsMatchIn(messageText)){
+            val matches = patternGetMedia.findAll(messageText)
+            val id = matches.map{ it.groupValues[1]}.joinToString()
+            val url = getRealMediaUrlFromTwitterID(id)
+            if (url!=""){
+                group.sendMessage("请求的媒体地址为$url")
+            } else {
+                group.sendMessage("已接受到一条请求，但未能获得媒体地址，可能是由于请求的推文不包含媒体附件")
+            }
+        }
+
         // 抓取gif
         val patternConvertToGIF = Regex("gif([0-9]+)")
         if (patternConvertToGIF.containsMatchIn(messageText)){
