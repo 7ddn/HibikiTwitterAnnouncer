@@ -110,11 +110,12 @@ suspend fun getTimelineAndSendMessage(
             // val newestID = newestTweet?.getString("id").toString()
             val newestText = newestTweet?.getString("text").toString()
             val authorID = newestTweet?.getString("author_id")
+            PluginMain.logger.info("Twitter 内容为${newestTweet.toString()}")
 
             if (newestTweet != null) {
                 if (newestTweet.containsKey("attachments")) {
-                    val mediaKeys = listOf(newestTweet.getJSONObject("attachments").getJSONArray("media_keys"))
-                    //PluginMain.logger.info("这条tweet的配图id分别是${mediaKeys.toString()}")
+                    val mediaKeys = newestTweet.getJSONObject("attachments").getJSONArray("media_keys")
+                    PluginMain.logger.info("这条tweet的配图id分别是${mediaKeys.toString()}")
                     mediaUrls = getMediaUrlsFromKeys(tweetMedia, mediaKeys)
                 }
 
@@ -208,13 +209,13 @@ fun checkUserName(userName: String): String {
 
 fun getMediaUrlsFromKeys(
     tweetMedia: JSONArray?,
-    mediaKeys: List<Any>,
+    mediaKeys: JSONArray,
 ): MutableList<String> {
     val mediaUrls: MutableList<String> = mutableListOf()
     for (i in 0 until tweetMedia?.size!!) {
         val media = tweetMedia.getJSONObject(i)
         if (media.getString("type") == "photo" && media.getString("media_key").toString() in mediaKeys) {
-            //PluginMain.logger.info(media.toString())
+            PluginMain.logger.info(media.toString())
             mediaUrls.add(media.getString("url"))
         }
     }

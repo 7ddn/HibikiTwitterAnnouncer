@@ -10,6 +10,7 @@ import net.mamoe.mirai.console.terminal.MiraiConsoleTerminalLoader
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.utils.BotConfiguration
 import pluginController.PluginMain
+import twitter.getNewestTweet
 import utils.convertMP4ToGIF
 
 @ConsoleExperimentalApi
@@ -19,15 +20,17 @@ suspend fun main() {
     PluginMain.load()
     PluginMain.enable()
 
-    val bot = MiraiConsole.addBot(123456, "") {
+    /*val bot = MiraiConsole.addBot(123456, "") {
         fileBasedDeviceInfo()
         protocol = BotConfiguration.MiraiProtocol.ANDROID_PAD
-    }.alsoLogin()
+    }.alsoLogin()*/
 
     MiraiConsole.job.join()
 
     GlobalScope.launch {
-        convertMP4ToGIF("https://video.twimg.com/tweet_video/E_AhfCsVgAktI8L.mp4")
+        // convertMP4ToGIF("https://video.twimg.com/tweet_video/E_AhfCsVgAktI8L.mp4")
+        print("now try to get list")
+        print(getNewestTweet().toString())
     }
 
     Thread.sleep(5000L)
